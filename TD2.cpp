@@ -92,38 +92,45 @@ void enleverFilm(ListeFilms& tableau, Film* leFilm)
 }
 //TODO: Une fonction pour trouver un Acteur par son nom dans une ListeFilms, qui retourne un pointeur vers l'acteur, ou nullptr si l'acteur n'est pas trouvé.  Devrait utiliser span.
 
-Acteur* trouverActeur(ListeActeurs& tableau, string acteur)
+Acteur* trouverActeur(ListeFilms& tableau, string nomActeur)
 {
-	for (Acteur* nomActeur : span(tableau.elements, tableau.nElements))
+	for(Film* chaqueFilms: span(tableau.elements, tableau.nElements))
 	{
-		if (nomActeur->nom == acteur)
+		for (Acteur* acteur : span(chaqueFilms->acteurs.elements, chaqueFilms->acteurs.nElements))
 		{
+			if (acteur->nom == nomActeur)
+			{
 			
-			return nomActeur;
+				return acteur;
+			}
 		}
+		return nullptr;
 	}
-	return nullptr;
 }
-//TODO: Compléter les fonctions pour lire le fichier et créer/allouer une ListeFilms.  La ListeFilms devra être passée entre les fonctions, pour vérifier l'existence d'un Acteur avant de l'allouer à nouveau (cherché par nom en utilisant la fonction ci-dessus).
-Acteur* lireActeur(istream& fichier, ListeFilms* tableauFilms)
+//TODO: Compléter les fonctions pour lire le fichier et créer/allouer une ListeFilms.  
+//La ListeFilms devra être passée entre les fonctions, pour vérifier l'existence d'un Acteur avant de l'allouer à nouveau (cherché par nom en utilisant la fonction ci-dessus).
+Acteur* lireActeur(istream& fichier, ListeFilms& tableauFilms)
 {
 	
 	Acteur acteur = {};
 	acteur.nom            = lireString(fichier);
 	acteur.anneeNaissance = lireUint16 (fichier); 
 	acteur.sexe           = lireUint8  (fichier);
-	if (trouverActeur(*tableauFilms.elements, acteur.nom) == nullptr)
+
+	Acteur* ptrActeur = trouverActeur(tableauFilms, acteur.nom);
+	if (ptrActeur == nullptr)
 	{
 		cout << acteur.nom;
 		return new Acteur(acteur);
 	}
 	else
 	{
-		return trouverActeur(, acteur.nom);
+		return trouverActeur(tableauFilms, acteur.nom);
 	}
 	return {}; //TODO: Retourner un pointeur soit vers un acteur existant ou un nouvel acteur ayant les bonnes informations, selon si l'acteur existait déjà.  Pour fins de débogage, 
 	//affichez les noms des acteurs crées; vous ne devriez pas voir le même nom d'acteur affiché deux fois pour la création.
 }
+
 
 Film* lireFilm(istream& fichier)
 {
