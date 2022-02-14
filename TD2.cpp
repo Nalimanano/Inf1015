@@ -54,22 +54,20 @@ void ajoutFilms(ListeFilms& tableau, Film* film)
 {
 	if (tableau.capacite - tableau.nElements <= 1)
 	{
-		int size = tableau.capacite;
-		size_t n = tableau.nElements;
-		Film** grandTableau = new Film * [size * 2];
-		for (int i = 0; i < n; i++)
+		
+		Film** grandTableau = new Film * [tableau.capacite * 2];
+		for (int i = 0; i < tableau.nElements; i++)
 		{
 			grandTableau[i] = tableau.elements[i];
 		}
 		delete[] tableau.elements;
 		tableau.elements = grandTableau;
-		tableau.elements[tableau.nElements++] = film;
+		delete[] grandTableau;
 
 	}
-	else
-	{
-		tableau.elements[tableau.nElements] = film;
-	}
+	tableau.elements[tableau.nElements] = film;
+	tableau.nElements++;
+	
 }
 
 
@@ -79,84 +77,86 @@ void ajoutFilms(ListeFilms& tableau, Film* film)
 
 void enleverFilm(ListeFilms& tableau, const Film* leFilm)
 {
-	for (Film*& film : span(tableau.elements, tableau.nElements))
+	//for (Film*& film : span(tableau.elements, tableau.nElements))
+	for (int i = 0; i < tableau.nElements;i++)
 	{
-		if (film->titre == leFilm->titre)
+		if(leFilm == tableau.elements[i])
 		{
-			film = tableau.elements[tableau.nElements - 1];
-			tableau.nElements = tableau.nElements - 1;
-			//return;
+			//film = tableau.elements[tableau.nElements - 1];
+			delete tableau.elements[i];
+			tableau.nElements--;
+			
+			return;
 		}
 	}
 	
-	//return;
 }
 //TODO: Une fonction pour trouver un Acteur par son nom dans une ListeFilms, qui retourne un pointeur vers l'acteur, ou nullptr si l'acteur n'est pas trouvé.  Devrait utiliser span.
 
-Acteur* trouverActeur(const ListeFilms& tableau, const string& nomActeur)
+Acteur* trouverActeur(const ListeFilms& tableau,  string nomActeur)
 {
 	Acteur* acteurTrouve = nullptr;
 
-	for(const Film* chaqueFilms: span(tableau.elements, tableau.nElements))
+	for (const Film* chaqueFilms : span(tableau.elements, tableau.nElements))
 	{
 		for (Acteur* acteur : span(chaqueFilms->acteurs.elements, chaqueFilms->acteurs.nElements))
 		{
-			if (acteur->nom == nomActeur)
+			if ( nomActeur == acteur->nom)
 			{
-			
-				acteurTrouve= acteur;
-				
+
+				acteurTrouve = acteur;
+
 			}
 		}
-		return acteurTrouve;
 	}
+	return acteurTrouve;
 }
 //TODO: Compléter les fonctions pour lire le fichier et créer/allouer une ListeFilms.  
 //La ListeFilms devra être passée entre les fonctions, pour vérifier l'existence d'un Acteur avant de l'allouer à nouveau (cherché par nom en utilisant la fonction ci-dessus).
 Acteur* lireActeur(istream& fichier, ListeFilms& tableauFilms)
 {
-	
+
 	Acteur acteur = {};
-	acteur.nom            = lireString(fichier);
-	acteur.anneeNaissance = lireUint16 (fichier); 
-	acteur.sexe           = lireUint8  (fichier);
-	cout << acteur.nom;
+	acteur.nom = lireString(fichier);
+	acteur.anneeNaissance = lireUint16(fichier);
+	acteur.sexe = lireUint8(fichier);
+	
 
 	Acteur* ptrActeur = trouverActeur(tableauFilms, acteur.nom);
 	if (ptrActeur == nullptr)
 	{
-		cout << acteur.nom<<" a, ete rajoute a la liste."<<endl;
+		cout << acteur.nom << " a ete rajoute a la liste." << endl;
 		return new Acteur(acteur);
 	}
-	else
-	{
-		cout << "Existe deja" << endl;
-		return trouverActeur(tableauFilms, acteur.nom);
-	}
+
+	cout << " Existe deja" << endl;
+	return ptrActeur;
 	
+
 }
 
 Film* lireFilm(istream& fichier, ListeFilms& tableauFilms)
 {
 	Film film = {};
-	film.titre       = lireString(fichier);
+	film.titre = lireString(fichier);
 	film.realisateur = lireString(fichier);
-	film.anneeSortie = lireUint16 (fichier);
-	film.recette     = lireUint16 (fichier);
-	film.acteurs.nElements = lireUint8 (fichier);  //NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms. 
+	film.anneeSortie = lireUint16(fichier);
+	film.recette = lireUint16(fichier);
+	film.acteurs.nElements = lireUint8(fichier);  //NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms. 
 	//Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
 	film.acteurs.capacite = film.acteurs.nElements;
 	film.acteurs.elements = new Acteur * [film.acteurs.nElements];
 
-	Film* ptrFilm = new Film(film);
+	//Film* ptrFilm = new Film(film);
 
 	for (int i = 0; i < film.acteurs.nElements; i++)
 	{
 		film.acteurs.elements[i] = lireActeur(fichier, tableauFilms);
-		ajoutFilms(film.acteurs.elements[i]->joueDans, ptrFilm);
+		film.acteurs.elements[i]->joueDans.elements[film.acteurs.nElements] = &film;
+		//ajoutFilms(film.acteurs.elements[i]->joueDans, ptrFilm);
 	}
 	//return ptrFilm; //TODO: Retourner le pointeur vers le nouveau film.
-	return ptrFilm;
+	return new Film(film);
 }
 
 ListeFilms creerListe(string nomFichier)
@@ -167,57 +167,38 @@ ListeFilms creerListe(string nomFichier)
 	int nElements = lireUint16(fichier);
 	//TODO: Créer une liste de films vide.
 	listeFilmsRemplir.capacite = nElements;
-	listeFilmsRemplir.elements = new Film* [nElements];
+	listeFilmsRemplir.nElements = 0;
+	listeFilmsRemplir.elements = new Film * [nElements];
 	for (int i = 0; i < nElements; i++)
 	{
-		//Film* test = lireFilm(fichier, listeFilmsRemplir);
-		ajoutFilms(listeFilmsRemplir, lireFilm(fichier, listeFilmsRemplir));
-		//listeFilmsRemplir.elements[i] = (lireFilm(fichier, listeFilmsRemplir)); //TODO: Ajouter le film à la liste.
+		ajoutFilms(listeFilmsRemplir, lireFilm(fichier, listeFilmsRemplir)); //TODO: Ajouter le film à la liste.
 	}
 	return listeFilmsRemplir; //TODO: Retourner la liste de films.
 }
 
 //TODO: Une fonction pour détruire un film (relâcher toute la mémoire associée à ce film, et les acteurs qui ne jouent plus dans aucun films de la collection).  
 //Noter qu'il faut enleve le film détruit des films dans lesquels jouent les acteurs.  Pour fins de débogage, affichez les noms des acteurs lors de leur destruction.
-void detruireFilm(Film* leFilm, ListeFilms& tableau)
+void detruireFilm(Film& leFilm)
 {
-	/*for (int i = 0; i < leFilm.acteurs.nElements; i++)
+
+	for (int i = 0; i < leFilm.acteurs.nElements; i++)
 	{
-		for (int j = 0; j < leFilm.acteurs.elements[i]->joueDans.nElements; j++)
+		if (leFilm.acteurs.elements[i]->joueDans.nElements <= 1)
 		{
-			leFilm.acteurs.elements[i]->joueDans.elements[j] == leFilm
-			if (leFilm.acteurs.elements[i]->joueDans.nElements <= 1)
-			{
-				delete leFilm.acteurs.elements[i];
-			}
+			delete leFilm.acteurs.elements[i];
 		}
 	}
-	delete &leFilm;*/
-	for (Acteur* acteur : span(leFilm->acteurs.elements, leFilm->acteurs.nElements))
-	{
-		for (Film* filmDeActeur : span(tableau.elements, tableau.nElements))
-		{
-			if (leFilm->titre == filmDeActeur->titre)
-			{
-				enleverFilm(acteur->joueDans, leFilm);
-			}
-		}
-		if (acteur->joueDans.nElements == 0)
-		{
-			cout << acteur->nom << " n'existe plus" << endl;
-			delete[] acteur->joueDans.elements;
-			delete acteur;
-		}
-	}
+	delete& leFilm;
+	
 }
 //TODO: Une fonction pour détruire une ListeFilms et tous les films qu'elle contient.
 void detruireListeFilm(ListeFilms& listeFilmsADetruire)
 {
 	for (int i = 0; i < listeFilmsADetruire.nElements; i++)
 	{
-		detruireFilm(listeFilmsADetruire.elements[i], listeFilmsADetruire);
+		detruireFilm(*listeFilmsADetruire.elements[i]);
 	}
-	delete[] listeFilmsADetruire.elements;
+	delete& listeFilmsADetruire;
 }
 
 void afficherActeur(const Acteur& acteur)
@@ -226,12 +207,13 @@ void afficherActeur(const Acteur& acteur)
 }
 
 //TODO: Une fonction pour afficher un film avec tous ces acteurs (en utilisant la fonction afficherActeur ci-dessus).
-void afficherUnFilm(const Film *film) 
+void afficherUnFilm(const Film& film)
 {
-	cout << film->titre << ", " << film->anneeSortie << ", " << film->realisateur << ", " << film->recette << endl;
-	for (Acteur* acteur : span(film->acteurs.elements, film->acteurs.nElements))
+	cout << film.titre <<", " << film.realisateur << ", " << film.anneeSortie <<   ", " << film.recette << endl;
+	//for (Acteur* acteur : span(film.acteurs.elements, film.acteurs.nElements))
+	for (int i = 0 ; i < film.acteurs.nElements; i++)
 	{
-		afficherActeur(*acteur);
+		afficherActeur(*film.acteurs.elements[i]);
 	}
 }
 
@@ -241,20 +223,20 @@ void afficherListeFilms(const ListeFilms& listeFilms)
 	static const string ligneDeSeparation = "-----------------------------------";
 	cout << ligneDeSeparation;
 	//TODO: Changer le for pour utiliser un span.
-	for (Film* film: span(listeFilms.elements ,listeFilms.nElements)) 
+	for (Film* film : span(listeFilms.elements, listeFilms.nElements))
 	{
 		//TODO: Afficher le film.
 
-		afficherUnFilm(film);
+		afficherUnFilm(*film);
 		cout << ligneDeSeparation;
-		
+
 	}
 }
 
 void afficherFilmographieActeur(const ListeFilms& listeFilms, const string& nomActeur)
 {
 	//TODO: Utiliser votre fonction pour trouver l'acteur (au lieu de le mettre à nullptr).
-	const Acteur* acteur = trouverActeur (listeFilms, nomActeur);
+	const Acteur* acteur = trouverActeur(listeFilms, nomActeur);
 	if (acteur == nullptr)
 		cout << "Aucun acteur de ce nom" << endl;
 	else
@@ -273,27 +255,26 @@ int main()
 
 	//TODO: La ligne suivante devrait lire le fichier binaire en allouant la mémoire nécessaire.  Devrait afficher les noms de 20 acteurs sans doublons (par l'affichage pour fins de débogage dans votre fonction lireActeur).
 	ListeFilms listeFilms = creerListe("films.bin");
-	
+
 	cout << ligneDeSeparation << "Le premier film de la liste est:" << endl;
 	//TODO: Afficher le premier film de la liste.  Devrait être Alien.
 
-	afficherUnFilm((listeFilms.elements[0]));
+	afficherUnFilm(*listeFilms.elements[0]);
 	cout << ligneDeSeparation << "Les films sont:" << endl;
 
 	//TODO: Afficher la liste des films.  Il devrait y en avoir 7.
 	afficherListeFilms(listeFilms);
-	
+
 	//TODO: Modifier l'année de naissance de Benedict Cumberbatch pour être 1976 (elle était 0 dans les données lues du fichier).  Vous ne pouvez pas supposer l'ordre des films et des acteurs dans les listes, il faut y aller par son nom.
-	Acteur& acteurAModifier = *trouverActeur(listeFilms, "Benedict Cumberbatch");
-	acteurAModifier.anneeNaissance = 1976;
+	Acteur* acteurAModifier = trouverActeur(listeFilms, "Benedict Cumberbatch");
+	acteurAModifier->anneeNaissance = 1976;
 
 	cout << ligneDeSeparation << "Liste des films où Benedict Cumberbatch joue sont:" << endl;
 	//TODO: Afficher la liste des films où Benedict Cumberbatch joue.  Il devrait y avoir Le Hobbit et Le jeu de l'imitation.
-	afficherFilmographieActeur(listeFilms, "Benedict Cumberbatch");
-
+	afficherListeFilms(acteurAModifier->joueDans);
+	
 	//TODO: Détruire et enlever le premier film de la liste (Alien).  Ceci devrait "automatiquement" (par ce que font vos fonctions) détruire les acteurs Tom Skerritt et John Hurt, mais pas Sigourney Weaver puisqu'elle joue aussi dans Avatar.
-	detruireFilm(listeFilms.elements[0], listeFilms);
-	enleverFilm(listeFilms, listeFilms.elements[0]);
+	detruireFilm(*listeFilms.elements[0]);
 	cout << ligneDeSeparation << "Les films sont maintenant:" << endl;
 
 	//TODO: Afficher la liste des films.
