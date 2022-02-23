@@ -32,12 +32,22 @@ private:
 
 class ListeActeurs {
 public:	
+	ListeActeurs() {};
 	ListeActeurs(int capacite, int nElements)
 		: capacite_(capacite), nElements_(nElements)
 	{
 		elements_ = make_unique<Acteur * []>(capacite) ;
 	}
+
+	ListeActeurs(const ListeActeurs& liste1) { capacite_ = liste1.capacite_; nElements_ = liste1.nElements_; }
+
+	int getCapacite() { return capacite_; }
+	int getNElements() { return nElements_; }
+
+
+
 	span<Acteur*> spanListeActeurs() const { return span(elements_.get(), nElements_); }
+	void ajouterActeurListe(Acteur* nom) { elements_[nElements_] = nom; }
 	 // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
 private:
 	int capacite_ = 0;
@@ -48,12 +58,12 @@ private:
 struct Film
 {
 	std::string titre, realisateur; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
-	int anneeSortie, recette; // Année de sortie et recette globale du film en millions de dollars
+	int anneeSortie = 0, recette = 0; // Année de sortie et recette globale du film en millions de dollars
 	ListeActeurs acteurs;
 };
 
 struct Acteur
 {
-	std::string nom; int anneeNaissance; char sexe;
+	std::string nom; int anneeNaissance = 0; char sexe = '\0';
 	ListeFilms joueDans;
 };
