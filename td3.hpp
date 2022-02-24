@@ -42,8 +42,12 @@ public:
 	ListeActeurs(const ListeActeurs& liste1) { capacite_ = liste1.capacite_; nElements_ = liste1.nElements_; }
 
 	int getCapacite() { return capacite_; }
-	int getNElements() { return nElements_; }
-
+	UInt8 getNElements(istream& fichier)
+	{
+		UInt8 nElements_ = 0;
+		fichier.read((char*)&nElements_, sizeof(nElements_));
+		return nElements_; 
+	}
 
 
 	span<Acteur*> spanListeActeurs() const { return span(elements_.get(), nElements_); }
