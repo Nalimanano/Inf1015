@@ -141,26 +141,18 @@ Film* lireFilm(istream& fichier, ListeFilms& listeFilms)
 	film->realisateur = lireString(fichier);
 	film->anneeSortie = lireUint16 (fichier);
 	film->recette     = lireUint16 (fichier);
-
+	ListeActeurs acteurs1(0, lireUint8(fichier)) ;
+	film->acteurs = acteurs1;
 	//film->acteurs;// = lireUint8(fichier);  //NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
 	//ListeActeurs acteurs1(lireUint8(fichier)+1, lireUint8(fichier));
-	film->acteurs.getNElements((fichier));
+	//film->acteurs.getNElements((fichier));
 
 					 //[
+ //NOTE: On aurait normalement fait le "new" au début de la fonction pour directement mettre les informations au bon endroit; on le fait ici pour que le code ci-dessus puisse être directement donné aux étudiants sans qu'ils aient le "new" déjà écrit.
 
-	//Film* filmp = new Film(film); //NOTE: On aurait normalement fait le "new" au début de la fonction pour directement mettre les informations au bon endroit; on le fait ici pour que le code ci-dessus puisse être directement donné aux étudiants sans qu'ils aient le "new" déjà écrit.
-	Film* filmp = new Film();
-	filmp->titre = film->titre;
-	filmp->realisateur = film->realisateur;
-	filmp->anneeSortie = film->anneeSortie;
-	filmp->recette = film->recette;
-	filmp->acteurs.getNElements((fichier));
-	cout << "Création Film " << film->titre << endl;
 
 	//filmp->acteurs.elements = new Acteur*[filmp->acteurs.nElements];
 	//EST CE QU'ON A BESOIN DE LA LIGNE SUPERIEURE CAR SI LE BUT EST DE FAIRE UN NOUVEAU TABLEAU DYNAMIQUEMENT AVEC LE MEME NOMBRE D'ELEMENTS QUE LA LISTE PRECEDENTE, CEST DEJA FAIT
-	
-	
 	/*
 	//]
 	for (int i = 0; i < film.acteurs.nElements; i++) {
@@ -170,23 +162,18 @@ Film* lireFilm(istream& fichier, ListeFilms& listeFilms)
 	
 	
 	
-	filmp->acteurs.spanListeActeurs();
+
 	
-	
-	//EST CE QUE DANS MA STRUCTURE, LE RETOUR DE SPANLISTEACTEURS EST VIDE CAR JE NE VOIS PAS COMMENT FAIRE POUR AJOUTER UN ACTEUR AVEC AJOUTERFILM SINON
-	
-	
-	
-	for (Acteur*& acteur : spanListeActeurs(filmp->acteurs)) 
+	for (Acteur*& acteur : film->acteurs.spanListeActeurs())
 	{
 		acteur = lireActeur(fichier, listeFilms); //TODO: Placer l'acteur au bon endroit dans les acteurs du film.
 		//TODO: Ajouter le film à la liste des films dans lesquels l'acteur joue.
 	//[
-		acteur->joueDans.ajouterFilm(filmp);
+		acteur->joueDans.ajouterFilm(film);
 	//]
 	}
 	//[
-	return filmp;
+	return film;
 	//]
 	return {}; //TODO: Retourner le pointeur vers le nouveau film.
 }
@@ -216,7 +203,6 @@ ListeFilms::ListeFilms(const string& nomFichier) : possedeLesFilms_(true)
 		//]
 		; //TODO: Ajouter le film à la liste.
 	}
-	
 	//[
 	/*
 	//]
@@ -238,14 +224,16 @@ bool joueEncore(const Acteur* acteur)
 	return acteur->joueDans.size() != 0;
 }
 void detruireFilm(Film* film)
-{
-	for (Acteur* acteur : spanListeActeurs(film->acteurs)) {
+{	
+	for (Acteur* acteur : film->acteurs.spanListeActeurs())
+	{
 		acteur->joueDans.enleverFilm(film);
 		if (!joueEncore(acteur))
 			detruireActeur(acteur);
 	}
 	cout << "Destruction Film " << film->titre << endl;
-	delete[] film->acteurs.elements;
+	//delete[] film->acteurs.elements;
+	 
 	delete film;
 }
 //]
@@ -276,7 +264,7 @@ void afficherFilm(const Film& film)
 	cout << "  Recette: " << film.recette << "M$" << endl;
 
 	cout << "Acteurs:" << endl;
-	for (const Acteur* acteur : spanListeActeurs(film.acteurs))
+	for (const Acteur* acteur : film.acteurs.spanListeActeurs())
 		afficherActeur(*acteur);
 }
 //]
