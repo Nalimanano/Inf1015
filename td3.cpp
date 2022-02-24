@@ -141,25 +141,45 @@ Film* lireFilm(istream& fichier, ListeFilms& listeFilms)
 	film->realisateur = lireString(fichier);
 	film->anneeSortie = lireUint16 (fichier);
 	film->recette     = lireUint16 (fichier);
+
 	//film->acteurs;// = lireUint8(fichier);  //NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
-	ListeActeurs acteurs1(lireUint8(fichier)+1, lireUint8(fichier));
-	film->acteurs = acteurs1 ;
+	//ListeActeurs acteurs1(lireUint8(fichier)+1, lireUint8(fichier));
+	film->acteurs.getNElements((fichier));
 
 					 //[
-	Film* filmp = new Film(film); //NOTE: On aurait normalement fait le "new" au début de la fonction pour directement mettre les informations au bon endroit; on le fait ici pour que le code ci-dessus puisse être directement donné aux étudiants sans qu'ils aient le "new" déjà écrit.
-	cout << "Création Film " << film.titre << endl;
-	filmp->acteurs.elements = new Acteur*[filmp->acteurs.nElements];
+
+	//Film* filmp = new Film(film); //NOTE: On aurait normalement fait le "new" au début de la fonction pour directement mettre les informations au bon endroit; on le fait ici pour que le code ci-dessus puisse être directement donné aux étudiants sans qu'ils aient le "new" déjà écrit.
+	Film* filmp = new Film();
+	filmp->titre = film->titre;
+	filmp->realisateur = film->realisateur;
+	filmp->anneeSortie = film->anneeSortie;
+	filmp->recette = film->recette;
+	filmp->acteurs.getNElements((fichier));
+	cout << "Création Film " << film->titre << endl;
+
+	//filmp->acteurs.elements = new Acteur*[filmp->acteurs.nElements];
+	//EST CE QU'ON A BESOIN DE LA LIGNE SUPERIEURE CAR SI LE BUT EST DE FAIRE UN NOUVEAU TABLEAU DYNAMIQUEMENT AVEC LE MEME NOMBRE D'ELEMENTS QUE LA LISTE PRECEDENTE, CEST DEJA FAIT
+	
+	
 	/*
 	//]
 	for (int i = 0; i < film.acteurs.nElements; i++) {
 		//[
+	
 	*/
-	for (Acteur*& acteur : spanListeActeurs(filmp->acteurs)) {
-		acteur = 
-		//]
-		lireActeur(fichier//[
-		, listeFilms//]
-		); //TODO: Placer l'acteur au bon endroit dans les acteurs du film.
+	
+	
+	
+	filmp->acteurs.spanListeActeurs();
+	
+	
+	//EST CE QUE DANS MA STRUCTURE, LE RETOUR DE SPANLISTEACTEURS EST VIDE CAR JE NE VOIS PAS COMMENT FAIRE POUR AJOUTER UN ACTEUR AVEC AJOUTERFILM SINON
+	
+	
+	
+	for (Acteur*& acteur : spanListeActeurs(filmp->acteurs)) 
+	{
+		acteur = lireActeur(fichier, listeFilms); //TODO: Placer l'acteur au bon endroit dans les acteurs du film.
 		//TODO: Ajouter le film à la liste des films dans lesquels l'acteur joue.
 	//[
 		acteur->joueDans.ajouterFilm(filmp);
