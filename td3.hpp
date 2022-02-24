@@ -39,19 +39,23 @@ public:
 		elements_ = make_unique<Acteur * []>(capacite) ;
 	}
 
+	ListeActeurs operator = (ListeActeurs const& liste2)
+	{
+		ListeActeurs liste1;
+		liste1.capacite_ = capacite_ + liste2.capacite_;
+		liste1.nElements_ = nElements_ + liste2.nElements_;
+		return liste1;
+
+	}
 	ListeActeurs(const ListeActeurs& liste1) { capacite_ = liste1.capacite_; nElements_ = liste1.nElements_; }
 
 	int getCapacite() { return capacite_; }
-	UInt8 getNElements(istream& fichier)
-	{
-		UInt8 nElements_ = 0;
-		fichier.read((char*)&nElements_, sizeof(nElements_));
-		return nElements_; 
-	}
 
+	
 
 	span<Acteur*> spanListeActeurs() const { return span(elements_.get(), nElements_); }
 	void ajouterActeurListe(Acteur* nom) { elements_[nElements_] = nom; }
+	void supprimerFilmListe(Acteur* nom) { elements_[nElements_] = nullptr; }
 	 // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
 private:
 	int capacite_ = 0;
