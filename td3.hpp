@@ -3,8 +3,8 @@
 
 #include <string>
 #include <cassert>
-#include <memory>
 #include "gsl/span"
+#include <memory>
 using gsl::span;
 using namespace std;
 
@@ -18,7 +18,7 @@ public:
 	~ListeFilms();
 	void ajouterFilm(Film* film);
 	void enleverFilm(const Film* film);
-	Acteur* trouverActeur(const std::string& nomActeur) const;
+	shared_ptr<Acteur> trouverActeur(const std::string& nomActeur) const;
 	span<Film*> enSpan() const;
 	int size() const { return nElements; }
 
@@ -31,12 +31,12 @@ private:
 };
 
 class ListeActeurs {
-public:	
+public:
 	ListeActeurs() {};
 	ListeActeurs(int capacite, int nElements)
 		: capacite_(capacite), nElements_(nElements)
 	{
-		elements_ = make_unique<Acteur * []>(capacite) ;
+		elements_ = make_unique<shared_ptr<Acteur> []>(capacite);
 	}
 
 	ListeActeurs operator = (ListeActeurs const& liste2)
@@ -50,28 +50,30 @@ public:
 	ListeActeurs(const ListeActeurs& liste1) { capacite_ = liste1.capacite_; nElements_ = liste1.nElements_; }
 
 	int getCapacite() { return capacite_; }
+	int getNElements() { return nElements_; }
 
-	
+	shared_ptr<Acteur>* getElement() { return elements_.get(); }
 
-	span<Acteur*> spanListeActeurs() const { return span(elements_.get(), nElements_); }
-	void ajouterActeurListe(Acteur* nom) { elements_[nElements_] = nom; }
+	span<shared_ptr<Acteur>> spanListeActeurs() const { return span(elements_.get(), nElements_); }
+
+	void ajouterActeurListe(shared_ptr<Acteur> nom) { elements_[nElements_] = nom; }
 	void supprimerFilmListe(Acteur* nom) { elements_[nElements_] = nullptr; }
-	 // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
+	// Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
 private:
 	int capacite_ = 0;
 	int nElements_ = 0;
-	unique_ptr<Acteur* []> elements_;
+	unique_ptr<shared_ptr<Acteur>[]> elements_ = make_unique<shared_ptr<Acteur>[]>(1);
 };
 
 struct Film
 {
 	std::string titre, realisateur; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
-	int anneeSortie = 0, recette = 0; // Année de sortie et recette globale du film en millions de dollars
+	int anneeSortie, recette; // Année de sortie et recette globale du film en millions de dollars
 	ListeActeurs acteurs;
 };
 
 struct Acteur
 {
-	std::string nom; int anneeNaissance = 0; char sexe = '\0';
+	std::string nom; int anneeNaissance; char sexe;
 	ListeFilms joueDans;
 };
