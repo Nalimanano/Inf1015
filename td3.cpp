@@ -139,20 +139,21 @@ shared_ptr<Acteur> lireActeur(istream& fichier//[
 
 Film* lireFilm(istream& fichier, ListeFilms& listeFilms)
 {
-	Film* film = new Film();
-	film->titre = lireString(fichier);
-	film->realisateur = lireString(fichier);
-	film->anneeSortie = lireUint16(fichier);
-	film->recette = lireUint16(fichier);
-	ListeActeurs acteurs1(0, lireUint8(fichier));
-	film->acteurs = acteurs1;
+	Film film = {};
+	film.titre = lireString(fichier);
+	//robleme film Tom Skerritt pour ajouter realisateur
+	film.realisateur = lireString(fichier);
+	film.anneeSortie = lireUint16(fichier);
+	film.recette = lireUint16(fichier);
+	//ListeActeurs acteurs1(lireUint8(fichier) + 1, lireUint8(fichier));
+	film.acteurs.setNElements(lireUint8(fichier));
+
 	//film->acteurs;// = lireUint8(fichier);  //NOTE: Vous avez le droit d'allouer d'un coup le tableau pour les acteurs, sans faire de réallocation comme pour ListeFilms.  Vous pouvez aussi copier-coller les fonctions d'allocation de ListeFilms ci-dessus dans des nouvelles fonctions et faire un remplacement de Film par Acteur, pour réutiliser cette réallocation.
 	//ListeActeurs acteurs1(lireUint8(fichier)+1, lireUint8(fichier));
 	//film->acteurs.getNElements((fichier));
 
 					 //[
  //NOTE: On aurait normalement fait le "new" au début de la fonction pour directement mettre les informations au bon endroit; on le fait ici pour que le code ci-dessus puisse être directement donné aux étudiants sans qu'ils aient le "new" déjà écrit.
-
 
 	//filmp->acteurs.elements = new Acteur*[filmp->acteurs.nElements];
 	//EST CE QU'ON A BESOIN DE LA LIGNE SUPERIEURE CAR SI LE BUT EST DE FAIRE UN NOUVEAU TABLEAU DYNAMIQUEMENT AVEC LE MEME NOMBRE D'ELEMENTS QUE LA LISTE PRECEDENTE, CEST DEJA FAIT
@@ -162,17 +163,19 @@ Film* lireFilm(istream& fichier, ListeFilms& listeFilms)
 		//[
 
 	*/
-	for (shared_ptr<Acteur>& acteur : film->acteurs.spanListeActeurs())
+	Film* filmp = new Film(film);
+	ListeActeurs (film.acteurs.getCapacite(), film.acteurs.getNElements());
+	for (shared_ptr<Acteur>& acteur : acteurs.spanListeActeurs())
 	//for (Acteur*& acteur : film->acteurs.spanListeActeurs())
 	{
 		acteur = lireActeur(fichier, listeFilms); //TODO: Placer l'acteur au bon endroit dans les acteurs du film.
 		//TODO: Ajouter le film à la liste des films dans lesquels l'acteur joue.
 	//[
-		acteur->joueDans.ajouterFilm(film);
+		acteur->joueDans.ajouterFilm(filmp);
 		//]
 	}
 	//[
-	return film;
+	return filmp;
 	//]
 	return {}; //TODO: Retourner le pointeur vers le nouveau film.
 }
