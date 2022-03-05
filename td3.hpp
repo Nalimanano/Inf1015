@@ -1,10 +1,11 @@
 #pragma once
 // Structures mémoires pour une collection de films.
-//
+
 #include <string>
 #include <cassert>
 #include "gsl/span"
 #include <memory>
+#include <array>
 using gsl::span;
 using namespace std;
 
@@ -30,39 +31,47 @@ private:
 	bool possedeLesFilms_ = false; // Les films seront détruits avec la liste si elle les possède.
 };
 
-class ListeActeurs {
+
+class ListeActeurs
+{
 public:
 	ListeActeurs() {};
 	ListeActeurs(int capacite, int nElements)
 		: capacite_(capacite), nElements_(nElements)
 	{
 		elements_ = make_unique<shared_ptr<Acteur> []>(capacite);
+	};
+
+	ListeActeurs(int nActeurs)
+		:capacite_(nActeurs), nElements_(nActeurs)
+	{
+		elements_ = make_unique<shared_ptr<Acteur> []>(nActeurs);
 	}
 
-	ListeActeurs operator = (ListeActeurs const& liste2)
-	{
+	ListeActeurs(const ListeActeurs& liste1) { capacite_ = liste1.capacite_; nElements_ = liste1.nElements_; }
+
+	ListeActeurs& operator = (ListeActeurs&& liste2) noexcept = default;
+	/* {
 		ListeActeurs liste1;
 		liste1.capacite_ = capacite_ + liste2.capacite_;
 		liste1.nElements_ = nElements_ + liste2.nElements_;
 		return liste1;
 
+	}*/
+	shared_ptr<Acteur>* getElements()
+	{
+		return elements_.get();
 	}
-	ListeActeurs(const ListeActeurs& liste1) { capacite_ = liste1.capacite_; nElements_ = liste1.nElements_; }
 
 	int getCapacite() { return capacite_; }
 	int getNElements() { return nElements_; }
-
-	shared_ptr<Acteur>* getElement() { return elements_.get(); }
-
 	span<shared_ptr<Acteur>> spanListeActeurs() const { return span(elements_.get(), nElements_); }
+	void ajouterActeurListe(shared_ptr<Acteur>nom) { elements_[nElements_++] = move(nom); }
 
-	void ajouterActeurListe(shared_ptr<Acteur> nom) { elements_[nElements_] = nom; }
-	void supprimerFilmListe(Acteur* nom) { elements_[nElements_] = nullptr; }
-	// Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
 private:
 	int capacite_ = 0;
 	int nElements_ = 0;
-	unique_ptr<shared_ptr<Acteur>[]> elements_ = make_unique<shared_ptr<Acteur>[]>(1);
+	unique_ptr<shared_ptr<Acteur>[]> elements_ = make_unique < shared_ptr<Acteur>[]>(1);
 };
 
 struct Film
@@ -75,5 +84,5 @@ struct Film
 struct Acteur
 {
 	std::string nom; int anneeNaissance; char sexe;
-	ListeFilms joueDans;
+	//ListeFilms joueDans;
 };
