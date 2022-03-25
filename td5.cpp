@@ -19,7 +19,7 @@
 #include <vector>
 #include <iomanip>
 #include <sstream>
-
+#include <forward_list>
 #if __has_include("gtest/gtest.h")
 #include "gtest/gtest.h"
 #endif
@@ -348,6 +348,21 @@ int main(int argc, char* argv[])
 	}
 
 	items.push_back(make_unique<FilmLivre>(dynamic_cast<Film&>(*items[4]), dynamic_cast<Livre&>(*items[9])));  // On ne demandait pas de faire une recherche; serait direct avec la matière du TD5.
+
+	//1.1 
+	forward_list<unique_ptr<Item>> f_list1;
+	for (int i = items.size() - 1; i > 0 ; i--)
+	{
+		f_list1.push_front(move(items[i]));
+	}
+	//1.2 Le probleme est que mon pointeur se deplace
+	// Est ce que je fais 1.1 en shared? ou je copie directement la valeur?
+	forward_list<shared_ptr<Item>> f_list2;
+	for (int i = 0; i < items.size(); i++)
+	{
+		shared_ptr<Item> objet = move(items[i]);
+		f_list2.push_front(objet);
+	}
 
 	afficherListeItems(items);
 }
