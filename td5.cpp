@@ -348,21 +348,65 @@ int main(int argc, char* argv[])
 	}
 
 	items.push_back(make_unique<FilmLivre>(dynamic_cast<Film&>(*items[4]), dynamic_cast<Livre&>(*items[9])));  // On ne demandait pas de faire une recherche; serait direct avec la matière du TD5.
-
+	
+	cout << ligneDeSeparation << endl;
+	cout << "1.1" << endl;
 	//1.1 
-	forward_list<unique_ptr<Item>> f_list1;
-	for (int i = items.size() - 1; i > 0 ; i--)
+	forward_list<Item*> fListOriginal;
+	auto obj = fListOriginal.before_begin();
+	for (auto&& item : items)
 	{
-		f_list1.push_front(move(items[i]));
+		obj = fListOriginal.emplace_after(obj, item.get());
 	}
-	//1.2 Le probleme est que mon pointeur se deplace
-	// Est ce que je fais 1.1 en shared? ou je copie directement la valeur?
-	forward_list<shared_ptr<Item>> f_list2;
-	for (int i = 0; i < items.size(); i++)
+	afficherListeItems(fListOriginal);
+
+
+	cout << ligneDeSeparation << endl;
+	cout << "1.2" << endl;
+	//1.2 
+	forward_list<Item*> fListInverse;
+
+	for (auto&& item: items)
 	{
-		shared_ptr<Item> objet = move(items[i]);
-		f_list2.push_front(objet);
+		fListInverse.emplace_front(item.get());
 	}
+	afficherListeItems(fListInverse);
+
+
+	cout << ligneDeSeparation << endl;
+	cout << "1.3" << endl;
+	//1.3
+	forward_list<Item*> fListOriginalV2 ;
+	forward_list<Item*>::iterator ptr;
+	ptr = fListOriginalV2.before_begin();
+	
+	for(auto item: fListOriginal)
+	{
+		ptr = fListOriginalV2.emplace_after(ptr, item);
+	}
+	afficherListeItems(fListOriginalV2);
+	
+	cout << ligneDeSeparation << endl;
+	cout << "1.4" << endl;
+	//1.4
+	vector<Item*> vector1_4;
+	string titre = "Alien";
+	for (auto item : fListOriginal)
+	{
+		if (item->titre == titre)
+		{
+			item.
+			{
+				int a = 5;
+			}
+		}
+	}
+	afficherListeItems(vector1_4);
+	
+	cout << ligneDeSeparation << endl;
+	cout << "1.5" << endl;
+	//1.5
+
 
 	afficherListeItems(items);
 }
