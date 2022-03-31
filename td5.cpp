@@ -390,22 +390,27 @@ int main(int argc, char* argv[])
 	cout << "1.4" << endl;
 	//1.4
 	vector<Item*> vector1_4;
-	string titre = "Alien";
-	for (auto item : fListOriginal)
+	auto iterator = vector1_4.begin();
+	for (auto&& item : fListOriginal)
 	{
-		if (item->titre == titre)
-		{
-			item.
-			{
-				int a = 5;
-			}
-		}
+		iterator = vector1_4.insert(iterator, item);
 	}
 	afficherListeItems(vector1_4);
 	
 	cout << ligneDeSeparation << endl;
 	cout << "1.5" << endl;
 	//1.5
+	auto pointerItemAlien = fListOriginal.front();
+	auto pointerFilmAlien = dynamic_cast<Film*>(pointerItemAlien);
+	for (auto&& acteur : pointerFilmAlien->acteurs.enSpan())
+	{
+		cout << *acteur << endl;
+	}
+
+	cout << ligneDeSeparation << endl;
+	cout << "2.1" << endl;
+	//2.1
+
 
 
 	afficherListeItems(items);
