@@ -20,6 +20,7 @@
 #include <iomanip>
 #include <sstream>
 #include <forward_list>
+#include <set>
 #if __has_include("gtest/gtest.h")
 #include "gtest/gtest.h"
 #endif
@@ -410,7 +411,27 @@ int main(int argc, char* argv[])
 	cout << ligneDeSeparation << endl;
 	cout << "2.1" << endl;
 	//2.1
+	auto truc = [](Item* Premier, Item* Second) {return Premier->titre < Second->titre; };
+	set<Item*, decltype(truc)> elementAlpha;
+	for (auto&& objet : items)
+	{
+		elementAlpha.emplace(objet.get());
+	}
+	afficherListeItems(elementAlpha);
+	
+	cout << ligneDeSeparation << endl;
+	cout << "2.2" << endl;
+	//2.2
+	unordered_map<string, Item*> mapItems;
+	for (auto&& objet : items)
+	{
+		mapItems[objet->titre] = objet.get();
+	}
+	cout << *mapItems["The Hobbit"];
 
+	cout << ligneDeSeparation << endl;
+	cout << "3.1" << endl;
+	//3.1
 
 
 	afficherListeItems(items);
