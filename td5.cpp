@@ -7,6 +7,7 @@
 #include "verification_allocation.hpp" // Nos fonctions pour le rapport de fuites de mémoire.
 #include "structures.hpp"      // Structures de données pour la collection de films en mémoire.
 
+#include "numeric"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -411,8 +412,8 @@ int main(int argc, char* argv[])
 	cout << ligneDeSeparation << endl;
 	cout << "2.1" << endl;
 	//2.1
-	auto truc = [](Item* Premier, Item* Second) {return Premier->titre < Second->titre; };
-	set<Item*, decltype(truc)> elementAlpha;
+	auto lambda = [](Item* Premier, Item* Second) {return Premier->titre < Second->titre; };
+	set<Item*, decltype(lambda)> elementAlpha;
 	for (auto&& objet : items)
 	{
 		elementAlpha.emplace(objet.get());
@@ -432,7 +433,13 @@ int main(int argc, char* argv[])
 	cout << ligneDeSeparation << endl;
 	cout << "3.1" << endl;
 	//3.1
+	vector<Item*> vecFilm;
+	copy_if(fListOriginal.begin(), fListOriginal.end(), back_inserter(vecFilm), [](Item* item) {return dynamic_cast<Film*>(item) != nullptr; });
+	afficherListeItems(vecFilm);
 
-
-	afficherListeItems(items);
+	cout << ligneDeSeparation << endl;
+	cout << "3.2" << endl;
+	//3.2
+	auto sommeRecettes = transform_reduce(vecFilm.begin(), vecFilm.end(), 0, plus{}, [](Item* item) {return dynamic_cast<Film*>(item)->recette; });
+	cout << sommeRecettes << endl;
 }
